@@ -1,0 +1,7 @@
+*.conf
+.env
+node_modules/
+dist/
+data/
+hone-build
+*.bin
