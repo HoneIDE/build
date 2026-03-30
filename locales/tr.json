@@ -1,0 +1,11 @@
+{
+  "callback ID required": "Callback ID gerekli",
+  "empty artifact body": "Bos artefakt body",
+  "format: /status/:name/:version": "format: /status/:name/:version",
+  "invalid callback ID": "Gecersiz callback ID",
+  "invalid callback ID format": "Gecersiz callback ID formati",
+  "name required": "Ad gerekli",
+  "no builds found": "Build bulunamadi",
+  "tarball body required (base64)": "Tarball body gerekli (base64)",
+  "version required": "Versiyon gerekli"
+}

@@ -1,0 +1,11 @@
+{
+  "callback ID required": "ID callback diperlukan",
+  "empty artifact body": "Body artefak kosong",
+  "format: /status/:name/:version": "format: /status/:name/:version",
+  "invalid callback ID": "ID callback tidak valid",
+  "invalid callback ID format": "Format ID callback tidak valid",
+  "name required": "Nama diperlukan",
+  "no builds found": "Tidak ada build ditemukan",
+  "tarball body required (base64)": "Body tarball diperlukan (base64)",
+  "version required": "Versi diperlukan"
+}

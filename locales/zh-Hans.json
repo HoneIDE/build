@@ -1,0 +1,11 @@
+{
+  "callback ID required": "需要callback ID",
+  "empty artifact body": "artifact body为空",
+  "format: /status/:name/:version": "格式: /status/:name/:version",
+  "invalid callback ID": "无效的callback ID",
+  "invalid callback ID format": "无效的callback ID格式",
+  "name required": "需要名称",
+  "no builds found": "未找到构建",
+  "tarball body required (base64)": "需要tarball body (base64)",
+  "version required": "需要版本"
+}

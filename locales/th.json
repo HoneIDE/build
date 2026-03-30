@@ -1,0 +1,11 @@
+{
+  "callback ID required": "ต้องระบุ callback ID",
+  "empty artifact body": "body ของ artifact ว่างเปล่า",
+  "format: /status/:name/:version": "รูปแบบ: /status/:name/:version",
+  "invalid callback ID": "callback ID ไม่ถูกต้อง",
+  "invalid callback ID format": "รูปแบบ callback ID ไม่ถูกต้อง",
+  "name required": "ต้องระบุชื่อ",
+  "no builds found": "ไม่พบ build",
+  "tarball body required (base64)": "ต้องระบุ body ของ tarball (base64)",
+  "version required": "ต้องระบุเวอร์ชัน"
+}

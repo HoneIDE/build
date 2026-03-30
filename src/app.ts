@@ -17,6 +17,7 @@ import Fastify from 'fastify';
 import mysql2 from 'mysql2/promise';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
+import { t } from 'perry/i18n';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -201,18 +202,18 @@ app.post('/upload', async (request: any, reply: any) => {
 
   if (pluginName.length === 0) {
     reply.status(400);
-    return '{"error":"name required"}';
+    return '{"error":"' + t('name required') + '"}';
   }
   if (version.length === 0) {
     reply.status(400);
-    return '{"error":"version required"}';
+    return '{"error":"' + t('version required') + '"}';
   }
 
   // Read tarball from request body (base64-encoded)
   const body = String(request.body);
   if (body.length < 10) {
     reply.status(400);
-    return '{"error":"tarball body required (base64)"}';
+    return '{"error":"' + t('tarball body required (base64)') + '"}';
   }
 
   // Ensure plugin exists in DB
@@ -414,7 +415,7 @@ app.post('/artifact/*', async (request: any, reply: any) => {
   const callbackId = _extracted;
   if (callbackId.length === 0) {
     reply.status(400);
-    return '{"error":"callback ID required"}';
+    return '{"error":"' + t('callback ID required') + '"}';
   }
 
   // Parse callbackId: last segment is platform, second-to-last is version
@@ -425,7 +426,7 @@ app.post('/artifact/*', async (request: any, reply: any) => {
   }
   if (lastDash < 1) {
     reply.status(400);
-    return '{"error":"invalid callback ID"}';
+    return '{"error":"' + t('invalid callback ID') + '"}';
   }
   const platform = callbackId.slice(lastDash + 1);
   const nameVersion = callbackId.slice(0, lastDash);
@@ -436,7 +437,7 @@ app.post('/artifact/*', async (request: any, reply: any) => {
   }
   if (secondDash < 1) {
     reply.status(400);
-    return '{"error":"invalid callback ID format"}';
+    return '{"error":"' + t('invalid callback ID format') + '"}';
   }
   const pluginVersion = nameVersion.slice(secondDash + 1);
   const pluginName = nameVersion.slice(0, secondDash);
@@ -445,7 +446,7 @@ app.post('/artifact/*', async (request: any, reply: any) => {
   const body = String(request.body);
   if (body.length < 10) {
     reply.status(400);
-    return '{"error":"empty artifact body"}';
+    return '{"error":"' + t('empty artifact body') + '"}';
   }
 
   // Normalize platform name
@@ -579,7 +580,7 @@ app.get('/status/*', async (request: any, reply: any) => {
 
   if (pluginName.length === 0 || version.length === 0) {
     reply.status(400);
-    return '{"error":"format: /status/:name/:version"}';
+    return '{"error":"' + t('format: /status/:name/:version') + '"}';
   }
 
   const [jobs]: any = await pool.execute(
@@ -589,7 +590,7 @@ app.get('/status/*', async (request: any, reply: any) => {
 
   if (jobs.length === 0) {
     reply.status(404);
-    return '{"error":"no builds found"}';
+    return '{"error":"' + t('no builds found') + '"}';
   }
 
   let allComplete = 1;

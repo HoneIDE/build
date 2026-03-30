@@ -1,0 +1,11 @@
+{
+  "callback ID required": "Callback-ID erforderlich",
+  "empty artifact body": "Leerer Artefakt-Body",
+  "format: /status/:name/:version": "Format: /status/:name/:version",
+  "invalid callback ID": "Ungueltige Callback-ID",
+  "invalid callback ID format": "Ungueltiges Callback-ID-Format",
+  "name required": "Name erforderlich",
+  "no builds found": "Keine Builds gefunden",
+  "tarball body required (base64)": "Tarball-Body erforderlich (base64)",
+  "version required": "Version erforderlich"
+}

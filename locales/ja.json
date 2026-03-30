@@ -1,0 +1,11 @@
+{
+  "callback ID required": "callback IDが必要です",
+  "empty artifact body": "アーティファクトのbodyが空です",
+  "format: /status/:name/:version": "形式: /status/:name/:version",
+  "invalid callback ID": "無効なcallback ID",
+  "invalid callback ID format": "無効なcallback ID形式",
+  "name required": "名前が必要です",
+  "no builds found": "ビルドが見つかりません",
+  "tarball body required (base64)": "tarballのbodyが必要です (base64)",
+  "version required": "バージョンが必要です"
+}

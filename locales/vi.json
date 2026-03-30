@@ -1,0 +1,11 @@
+{
+  "callback ID required": "Can co callback ID",
+  "empty artifact body": "Body artifact trong",
+  "format: /status/:name/:version": "dinh dang: /status/:name/:version",
+  "invalid callback ID": "Callback ID khong hop le",
+  "invalid callback ID format": "Dinh dang callback ID khong hop le",
+  "name required": "Can co ten",
+  "no builds found": "Khong tim thay build nao",
+  "tarball body required (base64)": "Can co body tarball (base64)",
+  "version required": "Can co phien ban"
+}
