@@ -32,6 +32,9 @@ let perryHubUrl = 'https://hub.perryts.com';
 let perryHubLicenseKey = '';
 let packagesDir = '../hone-marketplace/data/packages';
 let uploadsDir = './data/uploads';
+// Shared secret gating /upload and the /artifact callback. When set, callers must
+// present a matching ?token=. Leave empty only for isolated local dev.
+let uploadSecret = '';
 
 try {
   const conf = readFileSync('./build.conf', 'utf-8');
@@ -56,6 +59,7 @@ try {
     if (key === 'PERRY_HUB_LICENSE_KEY') perryHubLicenseKey = val;
     if (key === 'PACKAGES_DIR') packagesDir = val;
     if (key === 'UPLOADS_DIR') uploadsDir = val;
+    if (key === 'UPLOAD_SECRET') uploadSecret = val;
   }
 } catch (e: any) { /* no config file — use defaults */ }
 
@@ -168,6 +172,44 @@ function djb2(s: string): number {
   return h;
 }
 
+// Strict allowlist for names/versions/platforms that flow into shell commands
+// (execSync) and filesystem paths. Only [A-Za-z0-9._-], non-empty, no "..".
+// This is the primary defense against command injection (CWE-78) and path
+// traversal (CWE-22) on /upload and /artifact.
+function isSafeIdent(s: string): boolean {
+  if (s.length === 0 || s.length > 128) return false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    const ok = (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c === 46 || c === 95 || c === 45;
+    if (!ok) return false;
+    if (c === 46 && i > 0 && s.charCodeAt(i - 1) === 46) return false; // reject ".."
+  }
+  return true;
+}
+
+// Entry is a relative source path: allow [A-Za-z0-9._/-], no "..", no leading "/".
+// Written into a manifest file (not directly into a shell) but validated defensively.
+function isSafeEntry(s: string): boolean {
+  if (s.length === 0 || s.length > 256) return false;
+  if (s.charCodeAt(0) === 47) return false; // no absolute path
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    const ok = (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c === 46 || c === 95 || c === 45 || c === 47;
+    if (!ok) return false;
+    if (c === 46 && i > 0 && s.charCodeAt(i - 1) === 46) return false; // reject ".."
+  }
+  return true;
+}
+
+// Length-checked byte compare for secret tokens.
+function strEq(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a.charCodeAt(i) !== b.charCodeAt(i)) return false;
+  }
+  return true;
+}
+
 // ---------------------------------------------------------------------------
 // Fastify app
 // ---------------------------------------------------------------------------
@@ -186,6 +228,16 @@ app.get('/health', async (request: any, reply: any) => {
 app.post('/upload', async (request: any, reply: any) => {
   reply.header('Content-Type', 'application/json');
   const url = String(request.url);
+
+  // Require a matching upload secret when configured. This route shells out to
+  // perry-hub, so it must not be open to the network.
+  if (uploadSecret.length > 0) {
+    extractParam(url, 'token=');
+    if (!strEq(_extracted, uploadSecret)) {
+      reply.status(401);
+      return '{"error":"' + t('authentication required') + '"}';
+    }
+  }
 
   // Extract metadata from query params
   extractParam(url, 'name=');
@@ -207,6 +259,16 @@ app.post('/upload', async (request: any, reply: any) => {
   if (version.length === 0) {
     reply.status(400);
     return '{"error":"' + t('version required') + '"}';
+  }
+  // Reject anything that could break out of a shell argument or escape the
+  // uploads/packages directory before these values touch execSync or a path.
+  if (!isSafeIdent(pluginName) || !isSafeIdent(version)) {
+    reply.status(400);
+    return '{"error":"' + t('name and version must match [A-Za-z0-9._-]') + '"}';
+  }
+  if (!isSafeEntry(entry)) {
+    reply.status(400);
+    return '{"error":"' + t('invalid entry path') + '"}';
   }
 
   // Read tarball from request body (base64-encoded)
@@ -364,6 +426,11 @@ function submitToHub(pluginName: string, version: string, platform: string, mani
   callbackUrl += version;
   callbackUrl += '-';
   callbackUrl += platform;
+  // Carry the upload secret back on the callback so /artifact can authenticate it.
+  if (uploadSecret.length > 0) {
+    callbackUrl += '?token=';
+    callbackUrl += uploadSecret;
+  }
 
   let responsePath = prefix;
   responsePath += '-response.json';
@@ -410,6 +477,16 @@ app.post('/artifact/*', async (request: any, reply: any) => {
   reply.header('Content-Type', 'application/json');
   const url = String(request.url);
 
+  // The build callback carries the upload secret (submitToHub appends it to the
+  // callback URL). Reject unauthenticated callbacks when a secret is configured.
+  if (uploadSecret.length > 0) {
+    extractParam(url, 'token=');
+    if (!strEq(_extracted, uploadSecret)) {
+      reply.status(401);
+      return '{"error":"' + t('authentication required') + '"}';
+    }
+  }
+
   // Extract callback ID: /artifact/<pluginName>-<version>-<platform>
   extractPathSegment(url, '/artifact/');
   const callbackId = _extracted;
@@ -441,6 +518,13 @@ app.post('/artifact/*', async (request: any, reply: any) => {
   }
   const pluginVersion = nameVersion.slice(secondDash + 1);
   const pluginName = nameVersion.slice(0, secondDash);
+
+  // These parsed segments become shell arguments (mkdir/base64/shasum) and
+  // filesystem paths. Reject anything outside the strict allowlist.
+  if (!isSafeIdent(pluginName) || !isSafeIdent(pluginVersion) || !isSafeIdent(platform)) {
+    reply.status(400);
+    return '{"error":"' + t('invalid callback ID format') + '"}';
+  }
 
   // Read artifact body (base64-encoded binary)
   const body = String(request.body);

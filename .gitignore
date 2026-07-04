@@ -5,3 +5,9 @@ dist/
 data/
 hone-build
 *.bin
+
+# Perry build-cache dirs
+.perry/
+.perry-cache/
+src/.perry/
+src/.perry-cache/

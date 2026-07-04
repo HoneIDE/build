@@ -1,0 +1,15 @@
+# hone-build config — copy to build.conf and fill in. build.conf is gitignored.
+#
+# SECURITY: UPLOAD_SECRET gates /upload and the /artifact callback. When set,
+# callers must present a matching ?token=. Leave empty ONLY for isolated local
+# dev — an empty secret means /upload (which shells out to perry-hub) is open.
+DB_HOST=webserver.skelpo.net
+DB_USER=hone
+DB_PASS=__SET_ME__
+DB_NAME=hone_marketplace
+PORT=8447
+PERRY_HUB_URL=https://hub.perryts.com
+PERRY_HUB_LICENSE_KEY=__SET_ME__
+PACKAGES_DIR=../hone-marketplace/data/packages
+UPLOADS_DIR=./data/uploads
+UPLOAD_SECRET=__SET_ME_TO_A_LONG_RANDOM_STRING__
